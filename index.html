@@ -32,7 +32,7 @@
       localStorage.setItem(offerId, JSON.stringify(offer));
 
       // Tạo URL với offerId
-      const offerUrl = `http://192.168.50.93:5500/client.html?offerId=${offerId}`;
+      const offerUrl = `${window.location.href}client.html?offerId=${offerId}`;
       console.log("Offer URL:", offerUrl);
 
       // Tạo QR code
