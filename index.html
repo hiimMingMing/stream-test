@@ -13,12 +13,9 @@
 
   <script>
     const peer = new Peer();
-    document.body.appendChild(videoElement);
 
     // Bắt đầu stream
     document.getElementById("startStream").onclick = async function() {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-
       const offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
 
