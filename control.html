@@ -19,21 +19,23 @@
     let conn;
   
     peer.on('open', () => {
-      conn = peer.connect(peerId);
-      conn.on('open', () => {
-        document.getElementById('status').innerText = "✅ Đã kết nối dữ liệu!";
-      });
-  
-      conn.on('error', err => {
-        document.getElementById('status').innerText = "❌ Lỗi kết nối!";
-      });
-  
-      // Bắt đầu cuộc gọi để nhận màn hình
-      const call = peer.call(peerId, null);
-      call.on('stream', remoteStream => {
-        document.getElementById('remoteVideo').srcObject = remoteStream;
-      });
-    });
+  // Kết nối dữ liệu như trước
+  conn = peer.connect(peerId);
+  conn.on('open', () => {
+    document.getElementById('status').innerText = "✅ Đã kết nối dữ liệu!";
+  });
+
+  conn.on('error', err => {
+    document.getElementById('status').innerText = "❌ Lỗi kết nối!";
+  });
+
+  // Gọi để nhận stream
+  const call = peer.call(peerId, null); // Gửi null => trigger bên kia gọi getDisplayMedia
+  call.on('stream', remoteStream => {
+    document.getElementById('remoteVideo').srcObject = remoteStream;
+  });
+});
+
   
     function send(action) {
       if (conn && conn.open) {
