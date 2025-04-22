@@ -32,7 +32,7 @@
     });
 
     peer.on('open', async id => {
-      const controlUrl = `https://hiimmingming.github.io/test-peer-to-peer/control.html?peerId=${id}`;
+      const controlUrl = `https://hiimmingming.github.io/stream-test/control.html?peerId=${id}`;
       QRCode.toCanvas(document.getElementById('qrcode'), controlUrl);
     });
 
