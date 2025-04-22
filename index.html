@@ -39,7 +39,7 @@
       localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
 
       // Tạo URL chứa offerId
-      const offerUrl = `${window.location.origin}/client.html?offerId=${offerId}`;
+      const offerUrl = `https://hiimmingming.github.io/stream-test/client?offerId=${offerId}`;
       
       // Đặt offerUrl vào QR code
       QRCode.toCanvas(document.getElementById('qrcode'), offerUrl);
