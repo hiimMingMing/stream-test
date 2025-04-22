@@ -47,15 +47,20 @@
         document.getElementById('status').innerText = "❌ Lỗi kết nối!";
       });
 
-      // Gọi để lấy video
-      const call = peer.call(peerId, null);
-      call.on('stream', remoteStream => {
-        const video = document.getElementById('remoteVideo');
-        video.srcObject = remoteStream;
-      });
-      call.on('error', err => {
-        console.error("❌ Lỗi khi nhận stream:", err);
-      });
+      // Kiểm tra peerId và gọi chỉ khi có peerId hợp lệ
+      if (peerId) {
+        const call = peer.call(peerId, null); // Gọi để nhận stream từ peer
+        call.on('stream', remoteStream => {
+          const video = document.getElementById('remoteVideo');
+          video.srcObject = remoteStream;
+        });
+        call.on('error', err => {
+          console.error("❌ Lỗi khi nhận stream:", err);
+        });
+      } else {
+        console.error("❌ peerId không hợp lệ!");
+        document.getElementById('status').innerText = "❌ peerId không hợp lệ!";
+      }
     });
 
     function send(action) {
