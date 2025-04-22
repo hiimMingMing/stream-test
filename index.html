@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Host Stream</title>
+  <style>body { font-family: sans-serif; text-align: center; }</style>
+</head>
+<body>
+  <h1>🎥 Host Stream</h1>
+  <canvas id="qrcode"></canvas>
+  <p>Đang tạo QR...</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+
+  <script>
+    const pc = new RTCPeerConnection();
+    let localStream;
+
+    // Lấy stream màn hình
+    navigator.mediaDevices.getDisplayMedia({ video: true }).then(stream => {
+      localStream = stream;
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+      return pc.createOffer();
+    }).then(offer => {
+      return pc.setLocalDescription(offer).then(() => offer);
+    }).then(offer => {
+      // Tạo ID duy nhất cho offer
+      const offerId = 'offer_' + Date.now();
+      
+      // Lưu offer vào localStorage
+      localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
+
+      // Tạo URL chứa offerId
+      const offerUrl = `${window.location.href}client.html?offerId=${offerId}`;
+      
+      // Tạo QR Code từ URL
+      QRCode.toCanvas(document.getElementById('qrcode'), offerUrl);
+      
+      console.log("QR Code được tạo. Quét để kết nối!");
+    });
+  </script>
+</body>
+</html>

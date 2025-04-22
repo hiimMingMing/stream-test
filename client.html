@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Client Stream</title>
+  <style>
+    body { margin: 0; background: black; }
+    video { width: 100vw; height: 100vh; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <video id="video" autoplay playsinline></video>
+
+  <script>
+    const pc = new RTCPeerConnection();
+
+    const params = new URLSearchParams(window.location.search);
+    const offerId = params.get('offerId');
+
+    if (!offerId) {
+      alert("Không có offerId trong URL!");
+      return;
+    }
+
+    // Lấy offer từ localStorage dựa trên offerId
+    const offer = JSON.parse(localStorage.getItem(offerId));
+    if (!offer) {
+      alert("Không tìm thấy offer!");
+      return;
+    }
+
+    // Khi nhận track, gán stream vào video
+    pc.ontrack = (event) => {
+      document.getElementById('video').srcObject = event.streams[0];
+    };
+
+    async function start() {
+      // Cấu hình RemoteDescription với offer
+      await pc.setRemoteDescription(offer);
+
+      // Tạo answer và set localDescription
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      // Không gửi lại answer vì không có server signaling
+      console.log("Đã kết nối, đang stream...");
+    }
+
+    start();
+  </script>
+</body>
+</html>
