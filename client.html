@@ -25,13 +25,6 @@
         return;
       }
   
-      // Lấy offer từ localStorage dựa trên offerId
-      const offer = JSON.parse(localStorage.getItem(offerId));
-      if (!offer) {
-        alert("Không tìm thấy offer!");
-        return;
-      }
-  
       // Khi nhận track, gán stream vào video
       pc.ontrack = (event) => {
         document.getElementById('video').srcObject = event.streams[0];
