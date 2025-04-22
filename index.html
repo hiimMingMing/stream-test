@@ -13,35 +13,28 @@
   <div id="output">⏳ Đang chờ kết nối...</div>
 
   <script>
-    const peer = new Peer({
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          {
-            urls: "turn:openrelay.metered.ca:80",
-            username: "openrelayproject",
-            credential: "openrelayproject"
-          },
-          {
-            urls: "turn:openrelay.metered.ca:443",
-            username: "openrelayproject",
-            credential: "openrelayproject"
-          }
-        ]
-      }
-    });
-
+    const peer = new Peer({ /* giữ nguyên config */ });
+  
     peer.on('open', id => {
-      const controlUrl = `https://hiimmingming.github.io/test-peer-to-peer/control.html?peerId=${id}`;
+      const controlUrl = `https://hiimmingming.github.io/stream-test/control.html?peerId=${id}`;
       QRCode.toCanvas(document.getElementById('qrcode'), controlUrl);
     });
-
+  
     peer.on('connection', conn => {
-      document.getElementById('output').innerText = "✅ Đã kết nối!";
+      document.getElementById('output').innerText = "✅ Đã kết nối dữ liệu!";
       conn.on('data', data => {
         document.getElementById('output').innerText = "📥 Nhận: " + JSON.stringify(data);
       });
     });
+  
+    peer.on('call', call => {
+      navigator.mediaDevices.getDisplayMedia({ video: true, audio: false }).then(stream => {
+        call.answer(stream);
+      }).catch(err => {
+        console.error("❌ Lỗi lấy màn hình:", err);
+      });
+    });
   </script>
+  
 </body>
 </html>
