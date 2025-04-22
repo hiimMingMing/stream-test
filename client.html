@@ -1,51 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Client</title>
+  <meta charset="UTF-8">
+  <title>Client Stream</title>
+  <style>body { font-family: sans-serif; text-align: center; }</style>
 </head>
 <body>
-  <h1>Client</h1>
-  <video id="video" autoplay></video>
-
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.3.1/dist/peerjs.min.js"></script>
+  <h1>🎥 Client Stream</h1>
+  <p>Nhập chuỗi kết nối để xem stream:</p>
+  <textarea id="offerStringInput" rows="4" style="width: 80%; padding: 10px; font-size: 16px;"></textarea>
+  <button onclick="connectStream()">Kết nối và xem stream</button>
+  
+  <br><br>
+  <video id="video" width="600" controls autoplay></video>
 
   <script>
-    const peer = new Peer();
-
-    // Lấy offerId từ URL
-    const params = new URLSearchParams(window.location.search);
-    const offerId = params.get('offerId');
-    console.log("offerId từ URL:", offerId);
-
-    if (!offerId) {
-      alert("Không có offerId trong URL!");
-      return;
-    }
-
     const pc = new RTCPeerConnection();
 
-    // Khi nhận track, gán stream vào video
-    pc.ontrack = (event) => {
-      document.getElementById('video').srcObject = event.streams[0];
-    };
+    // Hàm kết nối và xem stream
+    function connectStream() {
+      const offerString = document.getElementById('offerStringInput').value;
 
-    async function start() {
+      if (!offerString) {
+        alert("Vui lòng nhập chuỗi kết nối!");
+        return;
+      }
+
       try {
-        // Cấu hình RemoteDescription với offer
-        await pc.setRemoteDescription(offerId);
+        // Parse chuỗi JSON và thiết lập RemoteDescription
+        const offer = JSON.parse(offerString);
+        
+        // Khi nhận track, gán stream vào video
+        pc.ontrack = (event) => {
+          document.getElementById('video').srcObject = event.streams[0];
+        };
 
-        // Tạo answer và set localDescription
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-
-        // Không gửi lại answer vì không có server signaling
-        console.log("Đã kết nối, đang stream...");
+        pc.setRemoteDescription(offer).then(() => {
+          console.log("Kết nối thành công và đang stream...");
+        });
       } catch (error) {
-        console.error("Lỗi khi thiết lập kết nối:", error);
+        alert("Lỗi khi kết nối: " + error);
       }
     }
-
-    start();
   </script>
 </body>
 </html>

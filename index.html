@@ -7,10 +7,18 @@
 </head>
 <body>
   <h1>🎥 Host Stream</h1>
-  <p>URL để kết nối:</p>
-  <input id="offerUrl" type="text" readonly style="width: 80%; padding: 10px; font-size: 16px;" />
-  <button onclick="copyToClipboard()">Sao chép URL</button>
-  <p>Quét mã QR hoặc sao chép URL để kết nối với stream của bạn.</p>
+  <p>Quét mã QR hoặc sao chép chuỗi để kết nối:</p>
+
+  <!-- Hiển thị QR -->
+  <canvas id="qrcode"></canvas>
+
+  <!-- Hiển thị chuỗi localDescription -->
+  <input id="offerString" type="text" readonly style="width: 80%; padding: 10px; font-size: 16px;" />
+
+  <button onclick="copyToClipboard()">Sao chép chuỗi</button>
+  <p>Quét mã QR hoặc sao chép chuỗi để kết nối với stream của bạn.</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
 
   <script>
     const pc = new RTCPeerConnection();
@@ -31,23 +39,26 @@
       localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
 
       // Tạo URL chứa offerId
-      const offerUrl = `${window.location.origin}/client.html?offerId=${JSON.stringify(pc.localDescription)}`;
+      const offerUrl = `${window.location.origin}/client.html?offerId=${offerId}`;
       
-      // Đặt offerUrl vào ô nhập văn bản
-      document.getElementById('offerUrl').value = offerUrl;
+      // Đặt offerUrl vào QR code
+      QRCode.toCanvas(document.getElementById('qrcode'), offerUrl);
+
+      // Đặt chuỗi localDescription vào ô nhập văn bản
+      document.getElementById('offerString').value = JSON.stringify(pc.localDescription);
       
-      console.log("Offer URL được tạo. Quét để kết nối!");
+      console.log("QR Code và chuỗi localDescription đã được tạo. Quét hoặc sao chép để kết nối!");
     });
 
-    // Hàm sao chép URL vào clipboard
+    // Hàm sao chép chuỗi vào clipboard
     function copyToClipboard() {
-      const copyText = document.getElementById('offerUrl');
+      const copyText = document.getElementById('offerString');
       copyText.select();
       copyText.setSelectionRange(0, 99999); // Cho các thiết bị di động
 
-      // Sao chép URL vào clipboard
+      // Sao chép chuỗi vào clipboard
       document.execCommand('copy');
-      alert("Đã sao chép URL!");
+      alert("Đã sao chép chuỗi!");
     }
   </script>
 </body>
