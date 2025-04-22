@@ -31,7 +31,7 @@
       localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
 
       // Tạo URL chứa offerId
-      const offerUrl = `${window.location.href}client.html?offerId=${pc.localDescription}`;
+      const offerUrl = `${window.location.href}client.html?offerId=${JSON.stringify(pc.localDescription)}`;
       
       // Tạo QR Code từ URL
       QRCode.toCanvas(document.getElementById('qrcode'), offerUrl);
