@@ -31,7 +31,7 @@
       localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
 
       // Tạo URL chứa offerId
-      const offerUrl = `${window.location.origin}/client.html?offerId=${offerId}`;
+      const offerUrl = `${window.location.origin}/client.html?offerId=${JSON.stringify(pc.localDescription)}`;
       
       // Đặt offerUrl vào ô nhập văn bản
       document.getElementById('offerUrl').value = offerUrl;
