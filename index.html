@@ -23,31 +23,32 @@
   <script>
     const pc = new RTCPeerConnection();
     let localStream;
-
+  
     // Lấy stream màn hình
     navigator.mediaDevices.getDisplayMedia({ video: true }).then(stream => {
       localStream = stream;
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
+  
       return pc.createOffer();
     }).then(offer => {
       return pc.setLocalDescription(offer).then(() => offer);
     }).then(offer => {
-      // Tạo ID duy nhất cho offer
+      // Gửi offer qua URL hoặc mã QR
+      const offerString = JSON.stringify(offer);
       const offerId = 'offer_' + Date.now();
       
-      // Lưu offer vào localStorage
-      localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
-
-      // Tạo URL chứa offerId
-      const offerUrl = `https://hiimmingming.github.io/stream-test/client?offerId=${offerId}`;
+      localStorage.setItem(offerId, offerString);
+      const offerUrl = `client.html?offerId=${offerId}`;
       
-      // Đặt offerUrl vào QR code
+      // Hiển thị offer URL dưới dạng QR code
       QRCode.toCanvas(document.getElementById('qrcode'), offerUrl);
-
-      // Đặt chuỗi localDescription vào ô nhập văn bản
-      document.getElementById('offerString').value = JSON.stringify(pc.localDescription);
       
-      console.log("QR Code và chuỗi localDescription đã được tạo. Quét hoặc sao chép để kết nối!");
+      // Hiển thị offer string để sao chép
+      document.getElementById('offerString').value = offerString;
+      
+      console.log("Offer đã tạo và đang chờ kết nối...");
+    }).catch(error => {
+      console.error("Lỗi khi tạo offer:", error);
     });
 
     // Hàm sao chép chuỗi vào clipboard
@@ -61,5 +62,6 @@
       alert("Đã sao chép chuỗi!");
     }
   </script>
+  
 </body>
 </html>

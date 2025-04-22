@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Client Stream</title>
-  <style>body { font-family: sans-serif; text-align: center; }</style>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    video { margin-top: 20px; }
+  </style>
 </head>
 <body>
   <h1>🎥 Client Stream</h1>
@@ -16,70 +19,69 @@
 
   <script>
     const pc = new RTCPeerConnection();
-
-    // Hàm kết nối và xem stream
+  
+    // Hàm kết nối và nhận stream
     function connectStream() {
       const offerString = document.getElementById('offerStringInput').value;
-
+  
       if (!offerString) {
         alert("Vui lòng nhập chuỗi kết nối!");
         return;
       }
-
+  
       try {
         // Parse chuỗi JSON và thiết lập RemoteDescription
         const offer = JSON.parse(offerString);
         
-        // Khi nhận track, gán stream vào video
-        pc.ontrack = (event) => {
-          console.log("Đã nhận track:", event.streams[0]);
-
-          const videoElement = document.getElementById('video');
-          // Gán stream vào video
-          videoElement.srcObject = event.streams[0];
-
-          // Kiểm tra xem video có thực sự nhận được stream không
-          if (videoElement.srcObject) {
-            console.log("Video đã nhận stream thành công.");
-          } else {
-            console.log("Không thể gán stream vào video.");
-          }
-
-          // Kiểm tra thêm một lần nữa nếu video chưa hiển thị
-          if (videoElement.paused) {
-            videoElement.play().then(() => {
-              console.log("Video bắt đầu phát!");
-            }).catch(error => {
-              console.error("Lỗi khi bắt đầu phát video:", error);
-            });
-          }
-        };
-
         // Thiết lập remote description từ offer
         pc.setRemoteDescription(offer).then(() => {
-          console.log("Kết nối thành công và đang stream...");
+          console.log("Remote description đã được thiết lập.");
+          
+          // Tạo đáp ứng (answer) cho offer
+          return pc.createAnswer();
+        }).then(answer => {
+          // Gửi answer trở lại để hoàn tất kết nối
+          return pc.setLocalDescription(answer);
+        }).then(() => {
+          console.log("Đáp ứng (answer) đã được gửi.");
         }).catch(error => {
-          console.error("Lỗi khi thiết lập remote description:", error);
-          alert("Lỗi khi thiết lập kết nối: " + error);
+          console.error("Lỗi trong quá trình kết nối:", error);
+          alert("Lỗi kết nối: " + error);
         });
-
+  
+        pc.ontrack = (event) => {
+  console.log("Đã nhận track:", event.streams[0]);
+  
+  // Kiểm tra stream nhận được
+  if (event.streams[0]) {
+    const videoElement = document.getElementById('video');
+    videoElement.srcObject = event.streams[0]; // Gán stream vào video
+    console.log("Stream đã được gán vào video element");
+  } else {
+    console.error("Không nhận được stream hợp lệ");
+  }
+};
         // Thêm ICE candidate nếu có
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             console.log("ICE candidate:", event.candidate);
           }
         };
-
-        // Xử lý trạng thái kết nối ICE
+  
+        // Kiểm tra trạng thái kết nối ICE
         pc.oniceconnectionstatechange = () => {
-          console.log("ICE connection state change:", pc.iceConnectionState);
+          console.log("Trạng thái kết nối ICE thay đổi:", pc.iceConnectionState);
+          if (pc.iceConnectionState === 'connected') {
+            console.log("Kết nối ICE đã thành công!");
+          }
         };
-
+  
       } catch (error) {
         alert("Lỗi khi kết nối: " + error);
-        console.error("Lỗi parse chuỗi:", error);
+        console.error("Lỗi khi parse chuỗi:", error);
       }
     }
   </script>
+  
 </body>
 </html>
