@@ -9,33 +9,55 @@
   <h1>📲 Điều khiển</h1>
   <div id="status">⏳ Đang kết nối...</div>
   <br/>
-  <video id="remoteVideo" autoplay playsinline style="width: 100%; max-height: 80vh;" controls></video>
+  <button onclick="send('left')">⬅️ Trái</button>
+  <button onclick="send('right')">➡️ Phải</button>
+  <button onclick="send('jump')">🕴️ Nhảy</button>
+  <br/><br/>
+  <video id="remoteVideo" autoplay playsinline style="max-width: 100%; border: 1px solid black;"></video>
 
   <script>
     const peerId = new URLSearchParams(location.search).get("peerId");
-    const peer = new Peer({ /* giữ nguyên config */ });
-  
+
+    const peer = new Peer({
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          {
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelayproject",
+            credential: "openrelayproject"
+          },
+          {
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject"
+          }
+        ]
+      }
+    });
+
     let conn;
-  
+
     peer.on('open', () => {
-  // Kết nối dữ liệu như trước
-  conn = peer.connect(peerId);
-  conn.on('open', () => {
-    document.getElementById('status').innerText = "✅ Đã kết nối dữ liệu!";
-  });
+      conn = peer.connect(peerId);
+      conn.on('open', () => {
+        document.getElementById('status').innerText = "✅ Đã kết nối dữ liệu!";
+      });
+      conn.on('error', err => {
+        document.getElementById('status').innerText = "❌ Lỗi kết nối!";
+      });
 
-  conn.on('error', err => {
-    document.getElementById('status').innerText = "❌ Lỗi kết nối!";
-  });
+      // Gọi để lấy video
+      const call = peer.call(peerId, null);
+      call.on('stream', remoteStream => {
+        const video = document.getElementById('remoteVideo');
+        video.srcObject = remoteStream;
+      });
+      call.on('error', err => {
+        console.error("❌ Lỗi khi nhận stream:", err);
+      });
+    });
 
-  // Gọi để nhận stream
-  const call = peer.call(peerId, null); // Gửi null => trigger bên kia gọi getDisplayMedia
-  call.on('stream', remoteStream => {
-    document.getElementById('remoteVideo').srcObject = remoteStream;
-  });
-});
-
-  
     function send(action) {
       if (conn && conn.open) {
         conn.send({ action });
