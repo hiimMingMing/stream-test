@@ -12,41 +12,48 @@
   <video id="video" autoplay playsinline></video>
 
   <script>
-    const pc = new RTCPeerConnection();
-
-    const params = new URLSearchParams(window.location.search);
-    const offerId = params.get('offerId');
-
-    if (!offerId) {
-      alert("Không có offerId trong URL!");
-      return;
+    async function initializeStream() {
+      const pc = new RTCPeerConnection();
+  
+      // Lấy offerId từ URL
+      const params = new URLSearchParams(window.location.search);
+      const offerId = params.get('offerId');
+  
+      // Kiểm tra offerId
+      if (!offerId) {
+        alert("Không có offerId trong URL!");
+        return;
+      }
+  
+      // Lấy offer từ localStorage dựa trên offerId
+      const offer = JSON.parse(localStorage.getItem(offerId));
+      if (!offer) {
+        alert("Không tìm thấy offer!");
+        return;
+      }
+  
+      // Khi nhận track, gán stream vào video
+      pc.ontrack = (event) => {
+        document.getElementById('video').srcObject = event.streams[0];
+      };
+  
+      try {
+        // Cấu hình RemoteDescription với offer
+        await pc.setRemoteDescription(offer);
+  
+        // Tạo answer và set localDescription
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+  
+        // Không gửi lại answer vì không có server signaling
+        console.log("Đã kết nối, đang stream...");
+      } catch (error) {
+        console.error("Lỗi khi thiết lập kết nối:", error);
+      }
     }
-
-    // Lấy offer từ localStorage dựa trên offerId
-    const offer = JSON.parse(localStorage.getItem(offerId));
-    if (!offer) {
-      alert("Không tìm thấy offer!");
-      return;
-    }
-
-    // Khi nhận track, gán stream vào video
-    pc.ontrack = (event) => {
-      document.getElementById('video').srcObject = event.streams[0];
-    };
-
-    async function start() {
-      // Cấu hình RemoteDescription với offer
-      await pc.setRemoteDescription(offer);
-
-      // Tạo answer và set localDescription
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      // Không gửi lại answer vì không có server signaling
-      console.log("Đã kết nối, đang stream...");
-    }
-
-    start();
+  
+    // Khởi động stream
+    initializeStream();
   </script>
 </body>
 </html>
