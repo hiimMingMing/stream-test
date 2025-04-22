@@ -22,15 +22,6 @@
       return;
     }
 
-    // Lấy offer từ localStorage dựa trên offerId
-    const offer = JSON.parse(localStorage.getItem(offerId));
-    console.log("Offer từ localStorage:", offer);
-
-    if (!offer) {
-      alert("Không tìm thấy offer!");
-      return;
-    }
-
     const pc = new RTCPeerConnection();
 
     // Khi nhận track, gán stream vào video
@@ -41,7 +32,7 @@
     async function start() {
       try {
         // Cấu hình RemoteDescription với offer
-        await pc.setRemoteDescription(offer);
+        await pc.setRemoteDescription(offerId);
 
         // Tạo answer và set localDescription
         const answer = await pc.createAnswer();
