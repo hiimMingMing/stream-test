@@ -7,8 +7,8 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
-  <h1>🎯 Máy tính chia sẻ màn hình</h1>
-  <p>Quét mã QR bằng điện thoại để xem màn hình</p>
+  <h1>🎯 Máy tính nhận tín hiệu</h1>
+  <p>Quét mã QR bằng điện thoại để kết nối</p>
   <canvas id="qrcode"></canvas>
   <div id="output">⏳ Đang chờ kết nối...</div>
 
@@ -31,20 +31,16 @@
       }
     });
 
-    peer.on('open', async id => {
-      const controlUrl = `https://hiimmingming.github.io/stream-test/control.html?peerId=${id}`;
+    peer.on('open', id => {
+      const controlUrl = `https://hiimmingming.github.io/test-peer-to-peer/control.html?peerId=${id}`;
       QRCode.toCanvas(document.getElementById('qrcode'), controlUrl);
     });
 
-    peer.on('call', async call => {
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-        call.answer(stream);
-        document.getElementById('output').innerText = "📡 Đang chia sẻ màn hình...";
-      } catch (err) {
-        console.error("Lỗi chia sẻ màn hình:", err);
-        document.getElementById('output').innerText = "❌ Không thể chia sẻ màn hình!";
-      }
+    peer.on('connection', conn => {
+      document.getElementById('output').innerText = "✅ Đã kết nối!";
+      conn.on('data', data => {
+        document.getElementById('output').innerText = "📥 Nhận: " + JSON.stringify(data);
+      });
     });
   </script>
 </body>

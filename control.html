@@ -6,10 +6,12 @@
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
-  <h1>📲 Xem màn hình máy tính</h1>
+  <h1>📲 Điều khiển</h1>
   <div id="status">⏳ Đang kết nối...</div>
   <br/>
-  <video id="screen" autoplay playsinline style="max-width: 100%; border: 2px solid black;"></video>
+  <button onclick="send('left')">⬅️ Trái</button>
+  <button onclick="send('right')">➡️ Phải</button>
+  <button onclick="send('jump')">🕴️ Nhảy</button>
 
   <script>
     const peerId = new URLSearchParams(location.search).get("peerId");
@@ -32,19 +34,23 @@
       }
     });
 
-    peer.on('open', () => {
-      const call = peer.call(peerId, null);
-      call.on('stream', stream => {
-        const video = document.getElementById('screen');
-        video.srcObject = stream;
-        document.getElementById('status').innerText = "📺 Đang xem màn hình từ máy tính!";
-      });
+    let conn;
 
-      call.on('error', err => {
-        console.error("Call error:", err);
-        document.getElementById('status').innerText = "❌ Lỗi khi nhận stream!";
+    peer.on('open', () => {
+      conn = peer.connect(peerId);
+      conn.on('open', () => {
+        document.getElementById('status').innerText = "✅ Đã kết nối tới " + peerId;
+      });
+      conn.on('error', err => {
+        document.getElementById('status').innerText = "❌ Lỗi kết nối!";
       });
     });
+
+    function send(action) {
+      if (conn && conn.open) {
+        conn.send({ action });
+      }
+    }
   </script>
 </body>
 </html>
