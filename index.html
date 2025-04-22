@@ -2,51 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Client Stream</title>
+  <title>Host Stream</title>
   <style>body { font-family: sans-serif; text-align: center; }</style>
 </head>
 <body>
-  <h1>🎥 Client Stream</h1>
-  <p>Nhập chuỗi kết nối để xem stream:</p>
-  <textarea id="offerStringInput" rows="4" style="width: 80%; padding: 10px; font-size: 16px;"></textarea>
-  <button onclick="connectStream()">Kết nối và xem stream</button>
-  
-  <br><br>
-  <video id="video" width="600" controls autoplay></video>
+  <h1>🎥 Host Stream</h1>
+  <p>Quét mã QR hoặc sao chép chuỗi để kết nối:</p>
+
+  <!-- Hiển thị QR -->
+  <canvas id="qrcode"></canvas>
+
+  <!-- Hiển thị chuỗi localDescription -->
+  <input id="offerString" type="text" readonly style="width: 80%; padding: 10px; font-size: 16px;" />
+
+  <button onclick="copyToClipboard()">Sao chép chuỗi</button>
+  <p>Quét mã QR hoặc sao chép chuỗi để kết nối với stream của bạn.</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
 
   <script>
     const pc = new RTCPeerConnection();
+    let localStream;
 
-    // Hàm kết nối và xem stream
-    function connectStream() {
-      const offerString = document.getElementById('offerStringInput').value;
+    // Lấy stream màn hình
+    navigator.mediaDevices.getDisplayMedia({ video: true }).then(stream => {
+      localStream = stream;
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+      return pc.createOffer();
+    }).then(offer => {
+      return pc.setLocalDescription(offer).then(() => offer);
+    }).then(offer => {
+      // Tạo ID duy nhất cho offer
+      const offerId = 'offer_' + Date.now();
+      
+      // Lưu offer vào localStorage
+      localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
 
-      if (!offerString) {
-        alert("Vui lòng nhập chuỗi kết nối!");
-        return;
-      }
+      // Tạo URL chứa offerId
+      const offerUrl = `https://hiimmingming.github.io/stream-test/client?offerId=${offerId}`;
+      
+      // Đặt offerUrl vào QR code
+      QRCode.toCanvas(document.getElementById('qrcode'), offerUrl);
 
-      try {
-        // Parse chuỗi JSON và thiết lập RemoteDescription
-        const offer = JSON.parse(offerString);
-        
-        // Khi nhận track, gán stream vào video
-        pc.ontrack = (event) => {
-          console.log("Đã nhận track", event.streams[0]);
-          const videoElement = document.getElementById('video');
-          videoElement.srcObject = event.streams[0];
-        };
+      // Đặt chuỗi localDescription vào ô nhập văn bản
+      document.getElementById('offerString').value = JSON.stringify(pc.localDescription);
+      
+      console.log("QR Code và chuỗi localDescription đã được tạo. Quét hoặc sao chép để kết nối!");
+    });
 
-        pc.setRemoteDescription(offer).then(() => {
-          console.log("Kết nối thành công và đang stream...");
-        }).catch(error => {
-          console.error("Lỗi khi thiết lập remote description:", error);
-          alert("Lỗi khi thiết lập kết nối: " + error);
-        });
-      } catch (error) {
-        alert("Lỗi khi kết nối: " + error);
-        console.error("Lỗi parse chuỗi:", error);
-      }
+    // Hàm sao chép chuỗi vào clipboard
+    function copyToClipboard() {
+      const copyText = document.getElementById('offerString');
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); // Cho các thiết bị di động
+
+      // Sao chép chuỗi vào clipboard
+      document.execCommand('copy');
+      alert("Đã sao chép chuỗi!");
     }
   </script>
 </body>
