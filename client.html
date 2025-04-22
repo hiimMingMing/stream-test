@@ -1,52 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Client Stream</title>
-  <style>
-    body { margin: 0; background: black; }
-    video { width: 100vw; height: 100vh; object-fit: contain; }
-  </style>
+  <title>Client</title>
 </head>
 <body>
-  <video id="video" autoplay playsinline></video>
+  <h1>Client</h1>
+  <video id="video" autoplay></video>
+
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.3.1/dist/peerjs.min.js"></script>
 
   <script>
-    async function initializeStream() {
-      const pc = new RTCPeerConnection();
-  
-      // Lấy offerId từ URL
-      const params = new URLSearchParams(window.location.search);
-      const offerId = params.get('offerId');
-  
-      // Kiểm tra offerId
-      if (!offerId) {
-        alert("Không có offerId trong URL!");
-        return;
-      }
-  
-      // Khi nhận track, gán stream vào video
-      pc.ontrack = (event) => {
-        document.getElementById('video').srcObject = event.streams[0];
-      };
-  
+    const peer = new Peer();
+
+    // Lấy offerId từ URL
+    const params = new URLSearchParams(window.location.search);
+    const offerId = params.get('offerId');
+    console.log("offerId từ URL:", offerId);
+
+    if (!offerId) {
+      alert("Không có offerId trong URL!");
+      return;
+    }
+
+    // Lấy offer từ localStorage dựa trên offerId
+    const offer = JSON.parse(localStorage.getItem(offerId));
+    console.log("Offer từ localStorage:", offer);
+
+    if (!offer) {
+      alert("Không tìm thấy offer!");
+      return;
+    }
+
+    const pc = new RTCPeerConnection();
+
+    // Khi nhận track, gán stream vào video
+    pc.ontrack = (event) => {
+      document.getElementById('video').srcObject = event.streams[0];
+    };
+
+    async function start() {
       try {
         // Cấu hình RemoteDescription với offer
         await pc.setRemoteDescription(offer);
-  
+
         // Tạo answer và set localDescription
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-  
+
         // Không gửi lại answer vì không có server signaling
         console.log("Đã kết nối, đang stream...");
       } catch (error) {
         console.error("Lỗi khi thiết lập kết nối:", error);
       }
     }
-  
-    // Khởi động stream
-    initializeStream();
+
+    start();
   </script>
 </body>
 </html>
