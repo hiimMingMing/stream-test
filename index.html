@@ -7,10 +7,10 @@
 </head>
 <body>
   <h1>🎥 Host Stream</h1>
-  <canvas id="qrcode"></canvas>
-  <p>Đang tạo QR...</p>
-
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+  <p>URL để kết nối:</p>
+  <input id="offerUrl" type="text" readonly style="width: 80%; padding: 10px; font-size: 16px;" />
+  <button onclick="copyToClipboard()">Sao chép URL</button>
+  <p>Quét mã QR hoặc sao chép URL để kết nối với stream của bạn.</p>
 
   <script>
     const pc = new RTCPeerConnection();
@@ -31,13 +31,24 @@
       localStorage.setItem(offerId, JSON.stringify(pc.localDescription));
 
       // Tạo URL chứa offerId
-      const offerUrl = `${window.location.href}client.html?offerId=${JSON.stringify(pc.localDescription)}`;
+      const offerUrl = `${window.location.origin}/client.html?offerId=${offerId}`;
       
-      // Tạo QR Code từ URL
-      QRCode.toCanvas(document.getElementById('qrcode'), offerUrl);
+      // Đặt offerUrl vào ô nhập văn bản
+      document.getElementById('offerUrl').value = offerUrl;
       
-      console.log("QR Code được tạo. Quét để kết nối!");
+      console.log("Offer URL được tạo. Quét để kết nối!");
     });
+
+    // Hàm sao chép URL vào clipboard
+    function copyToClipboard() {
+      const copyText = document.getElementById('offerUrl');
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); // Cho các thiết bị di động
+
+      // Sao chép URL vào clipboard
+      document.execCommand('copy');
+      alert("Đã sao chép URL!");
+    }
   </script>
 </body>
 </html>
